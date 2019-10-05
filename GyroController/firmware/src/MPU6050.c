@@ -44,7 +44,7 @@ void isTimedOut();
 void isTimedOut() {
     if (timerDone(&timeOut)) {
         while (!timerDone(&ledTimeout));
-        LATE ^= 0xF0;
+        //LATE ^= 0xF0;
     }
 
 }
@@ -134,18 +134,18 @@ void updateYAxis(void) {
             }
             if(gyroXDPS < 0)gyroXDPS = gyroXDPS*1.226;
             
-            if(gyroXDPS != 0)
-                printf("gyro: %f\r",gyroXDPS);
+            //if(gyroXDPS != 0)
+             //   printf("gyro: %f\r",gyroXDPS);
 
 
             xAngle += (gyroXDPS * SCALING_GYRO * (((double)millis() - lastMillis) / 1000.0));
             lastMillis = millis();
-            if (timerDone(&printTimer)) {
-               printf("gyroXDPS: %f\rLow: %f\rHigh: %f\r", gyroXDPS, lowG_x, highG_x);
-
-                //printf("gyro: %f\r", MPU_1.rg.XAxis);
-                printf("xAngle %f\r\r", xAngle);
-            }
+//            if (timerDone(&printTimer)) {
+//               printf("gyroXDPS: %f\rLow: %f\rHigh: %f\r", gyroXDPS, lowG_x, highG_x);
+//
+//                //printf("gyro: %f\r", MPU_1.rg.XAxis);
+//                printf("xAngle %f\r\r", xAngle);
+//            }
         }
     }
 

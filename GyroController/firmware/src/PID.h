@@ -8,7 +8,7 @@
 #ifndef PID_H
 #define	PID_H
 #include "Timers.h"
-#define MOTOR_ROTATION_kp    32 // 80
+#define MOTOR_ROTATION_kp    30 // 80
 #define MOTOR_ROTATION_ki    0
 #define MOTOR_ROTATION_kd    0
 

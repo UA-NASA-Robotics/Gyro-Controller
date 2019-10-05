@@ -30,7 +30,7 @@ void configureMacro(int macroID, int macroData)
 {
     switch(macroID)
     {
-        case ROTATION_COMMAND:
+        case ROTATION_COMMAND: 
         {
             localAngle = 0;
             lastAngle = 0;
@@ -47,6 +47,7 @@ void configureMacro(int macroID, int macroData)
             runConfiguredMacro = turnDegrees;
             runningMacroData = macroData;
             MacroRunning=true;
+            confirmMacro(ROTATION_COMMAND);
             break;
         }
         case ROTATION_MONITORING:
@@ -143,10 +144,6 @@ void updateLocalGyro()
 bool turnDegrees()
 {
    
-   
- 
-    
-   
     updateYAxis();
     //update the gyro data
     if(lastAngle != getY_Angle())
@@ -158,8 +155,8 @@ bool turnDegrees()
     //localAngle = getY_Angle() - StartAngle;
     if(timerDone(&debugTimer))
     {
-        printf("degrees = %f  of %2f\r",localAngle,RotatePID._target);
-        LED1 ^= 1;
+        //printf("degrees = %f  of %2f\r",localAngle,RotatePID._target);
+        //LED1 ^= 1;
     }
     if(isInRange(localAngle, RotatePID._target, ROTATION_ANGLE_TOLERANCE))
     {

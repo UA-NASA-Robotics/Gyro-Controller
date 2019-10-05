@@ -17,6 +17,7 @@
 #include "CAN.h"
 //#include <proc/p32mz2048efh.h>
 #include "../../../../../framework/driver/can/drv_can.h"
+
 #include "Definitions.h"
 #include "Timers.h"
 #include "motorHandler.h"

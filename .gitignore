@@ -15,3 +15,6 @@ bin/framework/peripheral/**/*.a
 doc/html/**/*
 asset.cache
 *.DS_Store
+GyroController/firmware/src/system_config/default/default.mhc
+GyroController/firmware/GyroController.X/nbproject/project.xml
+GyroController/firmware/GyroController.X/nbproject/configurations.xml

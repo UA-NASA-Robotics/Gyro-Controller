@@ -9,10 +9,10 @@
 #define	DEFINITIONS_H
 
 
-#define LED1    LATEbits.LATE6
+#define LED1    LATEbits.LATE4
 #define LED2    LATEbits.LATE5
-#define LED3    LATEbits.LATE7
-#define LED4    LATEbits.LATE4
+#define LED3    LATEbits.LATE6
+#define LED4    LATEbits.LATE7
 
 #define off  1
 #define on 0
