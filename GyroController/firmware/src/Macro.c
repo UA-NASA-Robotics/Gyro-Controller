@@ -42,7 +42,7 @@ void configureMacro(int macroID, int macroData)
             setTimerInterval(&updateTimer,50);
 
 
-            lastAngle = getY_Angle();
+            lastAngle = getX_Angle();
             INIT_PID(&RotatePID, macroData,MOTOR_ROTATION_kp, MOTOR_ROTATION_ki, MOTOR_ROTATION_kd);
             runConfiguredMacro = turnDegrees;
             runningMacroData = macroData;
@@ -53,8 +53,8 @@ void configureMacro(int macroID, int macroData)
         case ROTATION_MONITORING:
         {
             localAngle = 0;
-            lastAngle = getY_Angle();
-            StartAngle = getY_Angle();
+            lastAngle = getX_Angle();
+            StartAngle = getX_Angle();
             runConfiguredMacro = monitorDrive;
             MacroRunning=true;
             
@@ -133,10 +133,10 @@ bool monitorDrive()
 void updateLocalGyro()
 {
     updateYAxis();
-    if(getY_Angle() && lastAngle != getY_Angle())
+    if(getX_Angle() && lastAngle != getX_Angle())
     {
-        localAngle += getY_Angle() - lastAngle;
-        lastAngle = getY_Angle();
+        localAngle += getX_Angle() - lastAngle;
+        lastAngle = getX_Angle();
     }
 }
 
@@ -146,11 +146,11 @@ bool turnDegrees()
    
     updateYAxis();
     //update the gyro data
-    if(lastAngle != getY_Angle())
+    if(lastAngle != getX_Angle())
     {
         
-        localAngle += getY_Angle() - lastAngle;
-        lastAngle = getY_Angle();
+        localAngle += getX_Angle() - lastAngle;
+        lastAngle = getX_Angle();
     }
     //localAngle = getY_Angle() - StartAngle;
     if(timerDone(&debugTimer))

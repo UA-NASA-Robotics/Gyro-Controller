@@ -123,35 +123,30 @@ void updateYAxis(void) {
         lastMillis = millis();
     }
 
-
+    // if 10ms have elapsed since last we updated the angle
     if (timerDone(&IMU_UpdateTimer)) {
+        // Just making sure we didn't just calculated the angle
         if (lastMillis != millis()) {
-            //readIMU(Y_AXIS_GYRO);
+            // Read data form IMU
             readRawGyro(&MPU_1);
+            // Scalling new value based of the offset found during initialization
             gyroXDPS = (double)((MPU_1.rg.XAxis) - offsetG_X);
+            // if there is noise within dead-band set the velocity vector to zero
             if (isWithinFloat(gyroXDPS, lowG_x * 2.2, highG_x * 2.2)){
                 gyroXDPS = 0.00;
             }
+            // Fixing a strange occurance where clockwise direction results in a greater magnitude
+            // velocity vector the counter-clockwise with the same speed of rotation
             if(gyroXDPS < 0)gyroXDPS = gyroXDPS*1.226;
-            
-            //if(gyroXDPS != 0)
-             //   printf("gyro: %f\r",gyroXDPS);
-
-
+            // Accumulating the angle with the new velocity * scaler * TimeElapsed
             xAngle += (gyroXDPS * SCALING_GYRO * (((double)millis() - lastMillis) / 1000.0));
             lastMillis = millis();
-//            if (timerDone(&printTimer)) {
-//               printf("gyroXDPS: %f\rLow: %f\rHigh: %f\r", gyroXDPS, lowG_x, highG_x);
-//
-//                //printf("gyro: %f\r", MPU_1.rg.XAxis);
-//                printf("xAngle %f\r\r", xAngle);
-//            }
         }
     }
 
 }
 
-double getY_Angle() {
+double getX_Angle() {
     return xAngle;
 }
 

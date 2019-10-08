@@ -177,7 +177,7 @@ MPU_6050_t MPU_2;
 
 bool beginMPU(MPU_6050_t *mpu, mpu6050_dps_t scale, mpu6050_range_t range, MPU6050_ADDRESS mpua);
 bool isWithinInt(int sample, int lowBound, int highBound);
-double getY_Angle();
+double getX_Angle();
 void zeroIMUAxisGyro(void);
 void updateYAxis(void);
 
