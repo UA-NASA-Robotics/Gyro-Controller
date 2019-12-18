@@ -81,7 +81,7 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 #pragma config DMTINTV =    WIN_127_128
 #pragma config FSOSCEN =    OFF
 #pragma config IESO =       OFF
-#pragma config POSCMOD =    EC
+#pragma config POSCMOD =    OFF
 #pragma config OSCIOFNC =   OFF
 #pragma config FCKSM =      CSECME
 #pragma config WDTPS =      PS1048576
@@ -93,9 +93,9 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 #pragma config FDMTEN =     OFF
 /*** DEVCFG2 ***/
 
-#pragma config FPLLIDIV =   DIV_3
+#pragma config FPLLIDIV =   DIV_1
 #pragma config FPLLRNG =    RANGE_5_10_MHZ
-#pragma config FPLLICLK =   PLL_POSC
+#pragma config FPLLICLK =   PLL_FRC
 #pragma config FPLLMULT =   MUL_50
 #pragma config FPLLODIV =   DIV_2
 #pragma config UPLLFSEL =   FREQ_24MHZ

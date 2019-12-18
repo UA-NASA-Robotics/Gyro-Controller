@@ -6,6 +6,7 @@
 #include "Definitions.h"
 #include "drivingControl.h"
 #include "FastTransfer.h"
+#include "Communications.h"
 #define MOTOR_MIN_SPEED 1000
 #define MOTOR_MAX_SPEED 3000
 #define ROTATION_ANGLE_TOLERANCE 2
@@ -245,5 +246,5 @@ void testTurnDegrees(int degrees)
 void transmitGyroDone()
 {
     ToSend(&MasterFT,MACRO_RETURN_STATUS_INDEX,MACRO_DONE);
-    sendData(&MasterFT, MASTER_ADDRESS);
+    sendData(&MasterFT, MASTER_CONTROLLER);
 }

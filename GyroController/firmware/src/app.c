@@ -54,7 +54,7 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 // *****************************************************************************
 
 #include "app.h"
-#include "CANFastTransfer.h"
+#include "CAN_Handler/CANFastTransfer.h"
 // *****************************************************************************
 // *****************************************************************************
 // Section: Global Data Definitions
@@ -159,12 +159,23 @@ void APP_Tasks(void) {
         }
         case APP_STATE_COMS_CHECK:
         {
+            if(ReceiveDataCAN(FT_GLOBAL))
+            {
+                getCANFastData(FT_GLOBAL, MASTER_CONTROLLER*5 +1);
+            }
+            if(getNewDataFlagStatus(FT_GLOBAL, MASTER_CONTROLLER*5 +1 ))
+            {
+                LED1 ^=1;
+                LED2 ^=1;
+                LED3 ^=1;
+                LED4 ^=1;
+            }
             // CAN FastTransfer Receive
-            if (ReceiveDataCAN()) {
-                if (getCANFastData(CAN_COMMAND_INDEX) != 0) {
-                    configureMacro(getCANFastData(CAN_COMMAND_INDEX), getCANFastData(CAN_COMMAND_DATA_INDEX));
-                    clearCANFastDataValue(CAN_COMMAND_INDEX);
-                    clearCANFastDataValue(CAN_COMMAND_DATA_INDEX);
+            if (ReceiveDataCAN(FT_LOCAL)) {
+                if (getCANFastData(FT_LOCAL, CAN_COMMAND_INDEX) != 0) {
+                    configureMacro(getCANFastData(FT_LOCAL,CAN_COMMAND_INDEX), getCANFastData(FT_LOCAL,CAN_COMMAND_DATA_INDEX));
+                    clearCANFastDataValue(FT_LOCAL,CAN_COMMAND_INDEX);
+                    clearCANFastDataValue(FT_LOCAL,CAN_COMMAND_DATA_INDEX);
                 }
             }
             if (receiveData(&MotorFT)) {

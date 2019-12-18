@@ -5,6 +5,11 @@
                    displayName="Header Files"
                    projectFiles="true">
       <logicalFolder name="f2" displayName="app" projectFiles="true">
+        <logicalFolder name="f3" displayName="CAN_Handler" projectFiles="true">
+          <itemPath>../../../../Master-Controller/NaviController/firmware/src/CAN_Handler/CANFastTransfer.h</itemPath>
+          <itemPath>../../../../Master-Controller/NaviController/firmware/src/CAN_Handler/CANbufferHandler.h</itemPath>
+          <itemPath>../../../../Master-Controller/NaviController/firmware/src/CAN_Handler/GlobalCAN_IDs.h</itemPath>
+        </logicalFolder>
         <logicalFolder name="f2" displayName="MotorSystems" projectFiles="true">
           <itemPath>../src/MotorDefinitions.h</itemPath>
           <itemPath>../src/motorHandler.h</itemPath>
@@ -48,7 +53,6 @@
         <itemPath>../src/FastTransfer.h</itemPath>
         <itemPath>../src/CAN.h</itemPath>
         <itemPath>../src/Macro.h</itemPath>
-        <itemPath>../src/CANFastTransfer.h</itemPath>
         <itemPath>../src/app.h</itemPath>
         <itemPath>../src/Communications.h</itemPath>
       </logicalFolder>
@@ -134,6 +138,10 @@
                    displayName="Source Files"
                    projectFiles="true">
       <logicalFolder name="f2" displayName="app" projectFiles="true">
+        <logicalFolder name="f3" displayName="CAN_Handler" projectFiles="true">
+          <itemPath>../../../../Master-Controller/NaviController/firmware/src/CAN_Handler/CANFastTransfer.c</itemPath>
+          <itemPath>../../../../Master-Controller/NaviController/firmware/src/CAN_Handler/CANbufferHandler.c</itemPath>
+        </logicalFolder>
         <logicalFolder name="f2" displayName="MotorSytems" projectFiles="true">
           <itemPath>../src/Motor.c</itemPath>
           <itemPath>../src/PID.c</itemPath>
@@ -198,7 +206,6 @@
         <itemPath>../src/FastTransfer.c</itemPath>
         <itemPath>../src/CAN.c</itemPath>
         <itemPath>../src/Macro.c</itemPath>
-        <itemPath>../src/CANFastTransfer.c</itemPath>
         <itemPath>../src/main.c</itemPath>
         <itemPath>../src/app.c</itemPath>
         <itemPath>../src/Communications.c</itemPath>
@@ -287,7 +294,7 @@
         <property key="enable-unroll-loops" value="false"/>
         <property key="exclude-floating-point" value="false"/>
         <property key="extra-include-directories"
-                  value="../../../../../../framework;../src;../src/system_config/default;../src/default;../../../../../framework;../src/system_config/default/framework"/>
+                  value="../../../../../../framework;../src;../src/system_config/default;../src/default;../src/system_config/default/framework;../../../../../framework"/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="true"/>

@@ -4,6 +4,6 @@
 
 void confirmMacro(unsigned char macro) {
     ToSend(&MasterFT, UART_COMMAND_INDEX, macro);
-    sendData(&MasterFT, MASTER_ADDRESS);
+    sendData(&MasterFT, MASTER_CONTROLLER);
 }
 

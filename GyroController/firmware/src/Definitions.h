@@ -14,14 +14,30 @@
 #define LED3    LATEbits.LATE6
 #define LED4    LATEbits.LATE7
 
+typedef enum {
+    CONTROLBOX = 1,
+    POZYX,
+    JUICE_BOARD,
+    ROUTER_CARD,
+    MASTER_CONTROLLER,
+    MOTOR_CONTROLLER,
+    GYRO_CONTROLLER,
+    STRAIN_SENSOR,
+    OPTICAL_FLOW,
+    RASPBERRY_PI,
+    LED_CARD,
+    GLOBAL_ADDRESS = 31
+} Addresses_t;
+
+
+
 #define off  1
 #define on 0
 
-#define MASTER_ADDRESS          5
 
 #define MOTOR_ADDRESS           6
 
-#define MY_ADDRESS              7 
+#define MY_ADDRESS              GYRO_CONTROLLER
 
 #define UART_COMMAND_INDEX       8
 #define UART_COMMAND_DATA_INDEX  9

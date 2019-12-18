@@ -1,0 +1,6 @@
+[submodule "GyroController/firmware/src/CAN_Handler"]
+	path = GyroController/firmware/src/CAN_Handler
+	url = https://github.com/UA-NASA-Robotics/CAN_Handler.git
+[submodule "GyroController/firmware/src/Macro_Handler"]
+	path = GyroController/firmware/src/Macro_Handler
+	url = https://github.com/UA-NASA-Robotics/Macro_Handler.git
