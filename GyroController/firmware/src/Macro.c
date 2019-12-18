@@ -7,6 +7,10 @@
 #include "drivingControl.h"
 #include "FastTransfer.h"
 #include "Communications.h"
+#include "Macro_Handler/Macro_Mgr.h"
+#include "CAN_Handler/GlobalCAN_IDs.h"
+#include "CAN_Handler/CAN.h"
+#include "CAN_Handler/CANFastTransfer.h"
 #define MOTOR_MIN_SPEED 1000
 #define MOTOR_MAX_SPEED 3000
 #define ROTATION_ANGLE_TOLERANCE 2
@@ -26,6 +30,50 @@ double lastSpeed = 0;
 PID_Struct_t RotatePID;
 timers_t debugTimer;
 timers_t updateTimer;
+
+
+timers_t voidTime,voidTime2;
+
+bool Dummy(int val) {
+    if (voidTime.timerInterval != val) {
+        setTimerInterval(&voidTime, val);
+    }
+    return timerDone(&voidTime);
+}
+bool Dummy2(int val) {
+    if (voidTime2.timerInterval != val) {
+        setTimerInterval(&voidTime2, val);
+    }
+    return timerDone(&voidTime2);
+}
+
+void handleMacroStatus() {
+    ReceiveDataCAN(FT_GLOBAL);
+
+    /* If a macro is seen on the global bus from the router card*/
+    if (getNewDataFlagStatus(FT_GLOBAL, getGBL_MACRO_INDEX(ROUTER_CARD))) {
+
+        int macroID = getCANFastData(FT_GLOBAL, getGBL_MACRO_INDEX(ROUTER_CARD));
+        int macroDATA = getCANFastData(FT_GLOBAL, getGBL_MACRO_INDEX(ROUTER_CARD) + 1);
+        if (macroID == 0) {
+            clearMacros();
+        } else {
+            /* Add the macro to the queue*/
+            switch (macroID) {
+                case ROTATION_COMMAND:
+                    setMacroCallback(Dummy, 5000, ROTATION_COMMAND);
+                    break;
+                default:
+                    break;
+            }
+
+        }
+    }
+    if (ReceiveDataCAN(FT_LOCAL)) {
+
+    }
+
+}
 
 void configureMacro(int macroID, int macroData)
 {
@@ -48,7 +96,6 @@ void configureMacro(int macroID, int macroData)
             runConfiguredMacro = turnDegrees;
             runningMacroData = macroData;
             MacroRunning=true;
-            confirmMacro(ROTATION_COMMAND);
             break;
         }
         case ROTATION_MONITORING:

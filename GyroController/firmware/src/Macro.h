@@ -16,7 +16,7 @@ typedef enum{
             
 }MacroTypes;
 
-
+void handleMacroStatus();
 void configureMacro(int macroID, int macroData);
 void macroComplete(MacroTypes lastMacro);
 bool isMacroRunning();

@@ -54,7 +54,7 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 // *****************************************************************************
 
 #include "app.h"
-#include "CAN_Handler/CANFastTransfer.h"
+
 // *****************************************************************************
 // *****************************************************************************
 // Section: Global Data Definitions
@@ -110,6 +110,10 @@ void APP_Initialize(void) {
         LED4 ^= 1;
         while (!timerDone(&ledTime));
     }
+    LED1 = off;
+    LED2 = off;
+    LED3 = off;
+    LED4 = off;
     initCANISRs();
     initCANFT();
     DRV_CAN0_Open();
@@ -117,10 +121,10 @@ void APP_Initialize(void) {
 
     //InitUARTModule(&DebugUart,Uart_2);
 
-    InitFastTransferModule(&MasterFT, Master_UART, MY_ADDRESS, Send_put, Buffer_Get, Buffer_Size, Buffer_Peek);
-    InitFastTransferModule(&MotorFT, Motor_UART, MY_ADDRESS, Send_put, Buffer_Get, Buffer_Size, Buffer_Peek);
+//    InitFastTransferModule(&MasterFT, Master_UART, MY_ADDRESS, Send_put, Buffer_Get, Buffer_Size, Buffer_Peek);
+//    InitFastTransferModule(&MotorFT, Motor_UART, MY_ADDRESS, Send_put, Buffer_Get, Buffer_Size, Buffer_Peek);
     initChangeNotification();
-
+ initGlobalData(DEVICE_MACRO, getRunningMacros, 500);
     //***************INIT GYROS*************************
 
     beginMPU(&MPU_1, MPU6050_SCALE_250DPS, MPU6050_RANGE_2G, MPU6050_Address_1);
@@ -149,55 +153,20 @@ void APP_Tasks(void) {
         {
             // Update the gyro data
             updateYAxis();
-            if (timerDone(&ms100) && !isMacroRunning()) {
-                LED3 ^= 1;
-            } else  if (timerDone(&ms100) && isMacroRunning()) {
-                LED4 ^= 1;
+            handleMacroStatus();
+            if (getRunningMacros() != 0) {
+                runMacros();
+                LED4 = on;
+            } else {
+                LED4 = off;
             }
+            publishData();
             appData.state = APP_STATE_COMS_CHECK;
             break;
         }
         case APP_STATE_COMS_CHECK:
         {
-            if(ReceiveDataCAN(FT_GLOBAL))
-            {
-                getCANFastData(FT_GLOBAL, MASTER_CONTROLLER*5 +1);
-            }
-            if(getNewDataFlagStatus(FT_GLOBAL, MASTER_CONTROLLER*5 +1 ))
-            {
-                LED1 ^=1;
-                LED2 ^=1;
-                LED3 ^=1;
-                LED4 ^=1;
-            }
-            // CAN FastTransfer Receive
-            if (ReceiveDataCAN(FT_LOCAL)) {
-                if (getCANFastData(FT_LOCAL, CAN_COMMAND_INDEX) != 0) {
-                    configureMacro(getCANFastData(FT_LOCAL,CAN_COMMAND_INDEX), getCANFastData(FT_LOCAL,CAN_COMMAND_DATA_INDEX));
-                    clearCANFastDataValue(FT_LOCAL,CAN_COMMAND_INDEX);
-                    clearCANFastDataValue(FT_LOCAL,CAN_COMMAND_DATA_INDEX);
-                }
-            }
-            if (receiveData(&MotorFT)) {
-                if (MasterFT.ReceivedData[UART_COMMAND_INDEX] != 0) {
-                    if (MasterFT.ReceivedData[UART_COMMAND_INDEX] == ROTATION_COMMAND) {
-                        configureMacro(MasterFT.ReceivedData[UART_COMMAND_INDEX], MasterFT.ReceivedData[UART_COMMAND_DATA_INDEX]);
-                    }
-                }
-            }
-            if (receiveData(&MasterFT)) {
-                if (MasterFT.ReceivedData[UART_COMMAND_INDEX] == 0) {
-                    stopMacro();
-                } else if (MasterFT.ReceivedData[UART_COMMAND_INDEX] != 0) {
-                    if (MasterFT.ReceivedData[UART_COMMAND_INDEX] == ROTATION_COMMAND) {
-                        configureMacro(MasterFT.ReceivedData[UART_COMMAND_INDEX], MasterFT.ReceivedData[UART_COMMAND_DATA_INDEX]);
 
-                        //turnDegrees(MasterFT.ReceivedData[UART_COMMAND_DATA_INDEX]);
-
-
-                    }
-                }
-            }
             appData.state = APP_STATE_SERVICE_MACRO;
             break;
         }
@@ -205,7 +174,7 @@ void APP_Tasks(void) {
         {
             updateYAxis();
             if (isMacroRunning()) runMacro();
-        
+
             //            if(getMotorPosReached(&LeftMotor))
             //            {
             //                setMotorVel(&LeftMotor,0);

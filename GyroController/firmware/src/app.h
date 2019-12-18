@@ -65,9 +65,12 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 #include "uart_Handler.h"
 #include "FastTransfer.h"
 #include "MPU6050.h"
-#include "CAN.h"
+#include "CAN_Handler/CAN.h"
 #include "Motor.h"
 #include "Macro.h"
+#include "CAN_Handler/CANFastTransfer.h"
+#include "DataPublishing.h"
+#include "Macro_Handler/Macro_Mgr.h"
 // DOM-IGNORE-BEGIN
 #ifdef __cplusplus  // Provide C++ Compatibility
 

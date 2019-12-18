@@ -14,7 +14,15 @@
 
 
 #define FLIP_MOTORS
+#ifndef DATA_T
+#define DATA_T
 
+typedef struct {
+    int data;
+    bool newDataFlag;
+} Data_t;
+
+#endif
 typedef enum
 {
 	Velocity=0,
@@ -28,8 +36,8 @@ typedef struct{
 	int Home;
 }LimitSwitch_t;
 
-typedef struct
-{
+typedef struct {
+    //Can Address
 	//Can Address
 	char 			ID;
 	char 			Status;
@@ -52,7 +60,18 @@ typedef struct
     long            TargetCounts;
     bool            FreshVelocity;
     int             Velocity;
-}Motor_t;
+    Data_t          EncoderPos;
+    Data_t          SSIEncoderPos;
+    Data_t          HallPos;
+    Data_t          A0;
+    Data_t          A1;
+    Data_t          Digital;
+    Data_t          PosReached;
+    Data_t          ErrorRqst;
+    Data_t          CurrentUsage;
+    Data_t          RqstVel;
+    Data_t          RqstCount;
+} Motor_t;
 //WARNING!! 
 //WARNING!! 
 //WARNING!!  

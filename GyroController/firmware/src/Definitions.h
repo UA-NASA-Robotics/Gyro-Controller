@@ -8,34 +8,18 @@
 #ifndef DEFINITIONS_H
 #define	DEFINITIONS_H
 
+#include "CAN_Handler/GlobalCAN_IDs.h"
 
 #define LED1    LATEbits.LATE4
 #define LED2    LATEbits.LATE5
 #define LED3    LATEbits.LATE6
 #define LED4    LATEbits.LATE7
 
-typedef enum {
-    CONTROLBOX = 1,
-    POZYX,
-    JUICE_BOARD,
-    ROUTER_CARD,
-    MASTER_CONTROLLER,
-    MOTOR_CONTROLLER,
-    GYRO_CONTROLLER,
-    STRAIN_SENSOR,
-    OPTICAL_FLOW,
-    RASPBERRY_PI,
-    LED_CARD,
-    GLOBAL_ADDRESS = 31
-} Addresses_t;
-
-
 
 #define off  1
 #define on 0
 
 
-#define MOTOR_ADDRESS           6
 
 #define MY_ADDRESS              GYRO_CONTROLLER
 
@@ -63,8 +47,8 @@ typedef enum {
     #define DIG_COMMAND             3
 
 //**********Gyro Macros*****************
-    #define ROTATION_COMMAND        1  //rotate
-    #define ROTATION_MONITORING     2   
+    #define ROTATION_COMMAND        (1<< 8)  //rotate
+    #define ROTATION_MONITORING     (1<< 9)   
 
  //**************TO ALL**********************
     #define PAUSE_COMMAND           4     //Pause the cammand that is running

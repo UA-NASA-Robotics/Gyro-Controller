@@ -63,7 +63,7 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 #include "app.h"
 #include "system_definitions.h"
 #include "../../Timers.h"
-#include "../../CAN.h"
+#include "../../CAN_Handler/CAN.h"
 #include "changeNotification.h"
 
 // *****************************************************************************
