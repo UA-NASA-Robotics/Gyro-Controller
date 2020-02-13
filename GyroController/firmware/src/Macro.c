@@ -18,10 +18,10 @@ void updateLocalGyro();
 void transmitGyroDone();
 
 
-bool (*runConfiguredMacro)();
+bool(*runConfiguredMacro)();
 bool runningMacroData = 0;
 bool MacroRunning = false;
-bool isInRange(float currentVal ,float destinationVal, float tolerence);
+bool isInRange(float currentVal, float destinationVal, float tolerence);
 double localAngle = 0;
 double StartAngle = 0;
 double lastAngle = 0;
@@ -32,7 +32,13 @@ timers_t debugTimer;
 timers_t updateTimer;
 
 
-timers_t voidTime,voidTime2;
+timers_t voidTime, voidTime2;
+
+typedef enum {
+    InitMacro = 0,
+    Rotate
+} RotateMacro_t;
+RotateMacro_t RotateMacro = InitMacro;
 
 bool Dummy(int val) {
     if (voidTime.timerInterval != val) {
@@ -40,6 +46,7 @@ bool Dummy(int val) {
     }
     return timerDone(&voidTime);
 }
+
 bool Dummy2(int val) {
     if (voidTime2.timerInterval != val) {
         setTimerInterval(&voidTime2, val);
@@ -49,53 +56,58 @@ bool Dummy2(int val) {
 
 void handleMacroStatus() {
     ReceiveDataCAN(FT_GLOBAL);
-
+    ReceiveDataCAN(FT_LOCAL);
     /* If a macro is seen on the global bus from the router card*/
     if (getNewDataFlagStatus(FT_GLOBAL, getGBL_MACRO_INDEX(ROUTER_CARD))) {
-
         int macroID = getCANFastData(FT_GLOBAL, getGBL_MACRO_INDEX(ROUTER_CARD));
         int macroDATA = getCANFastData(FT_GLOBAL, getGBL_MACRO_INDEX(ROUTER_CARD) + 1);
-        if (macroID == 0) {
-            clearMacros();
-        } else {
-            /* Add the macro to the queue*/
-            switch (macroID) {
-                case ROTATION_COMMAND:
-                    setMacroCallback(Dummy, 5000, ROTATION_COMMAND);
-                    break;
-                default:
-                    break;
-            }
-
-        }
+        handleCANmacro(macroID, macroDATA);
     }
-    if (ReceiveDataCAN(FT_LOCAL)) {
-
+    if (getNewDataFlagStatus(FT_LOCAL, CAN_COMMAND_INDEX)) {
+        int macroID = getCANFastData(FT_LOCAL, CAN_COMMAND_INDEX);
+        int macroDATA = getCANFastData(FT_LOCAL, CAN_COMMAND_DATA_INDEX);
+        handleCANmacro(macroID, macroDATA);
     }
 
 }
 
-void configureMacro(int macroID, int macroData)
-{
-    switch(macroID)
-    {
-        case ROTATION_COMMAND: 
+void handleCANmacro(short _macroID, short _macroDATA) {
+    if (_macroID == 0) {
+        clearMacros();
+        MotorsAllStop();
+    } else {
+        /* Add the macro to the queue*/
+        switch (_macroID) {
+            case ROTATION_COMMAND:
+                setMacroCallback(turnDegrees, _macroDATA, ROTATION_COMMAND);
+                break;
+            default:
+                break;
+        }
+
+    }
+}
+
+void configureMacro(int macroID, int macroData) {
+    switch (macroID) {
+        case ROTATION_COMMAND:
         {
             localAngle = 0;
             lastAngle = 0;
 
             lastDir = 0;
             lastSpeed = 0;
-            
+
             setTimerInterval(&debugTimer, 100);
-            setTimerInterval(&updateTimer,50);
+            setTimerInterval(&updateTimer, 50);
+
 
 
             lastAngle = getX_Angle();
-            INIT_PID(&RotatePID, macroData,MOTOR_ROTATION_kp, MOTOR_ROTATION_ki, MOTOR_ROTATION_kd);
+            INIT_PID(&RotatePID, macroData, MOTOR_ROTATION_kp, MOTOR_ROTATION_ki, MOTOR_ROTATION_kd);
             runConfiguredMacro = turnDegrees;
             runningMacroData = macroData;
-            MacroRunning=true;
+            MacroRunning = true;
             break;
         }
         case ROTATION_MONITORING:
@@ -104,24 +116,24 @@ void configureMacro(int macroID, int macroData)
             lastAngle = getX_Angle();
             StartAngle = getX_Angle();
             runConfiguredMacro = monitorDrive;
-            MacroRunning=true;
-            
+            MacroRunning = true;
+
             break;
         }
     }
 }
 
-
-bool isMacroRunning()
-{
+bool isMacroRunning() {
     return MacroRunning;
 }
-void runMacro()
-{
-    if(runConfiguredMacro != NULL){runConfiguredMacro();}
+
+void runMacro() {
+    if (runConfiguredMacro != NULL) {
+        runConfiguredMacro();
+    }
 }
-void stopMacro()
-{
+
+void stopMacro() {
     runConfiguredMacro = NULL;
     MacroRunning = false;
     LED1 = off;
@@ -129,10 +141,9 @@ void stopMacro()
     LED3 = off;
     LED4 = off;
 }
-void macroComplete(MacroTypes lastMacro)
-{
-    switch(lastMacro)
-    {
+
+void macroComplete(MacroTypes lastMacro) {
+    switch (lastMacro) {
         case Drive_Monitoing:
         {
             //MotorsAllStop();
@@ -143,34 +154,29 @@ void macroComplete(MacroTypes lastMacro)
         case TURNING_MACRO:
         {
             //togglePinState(&MasterPin1);
-            MacroRunning=false;
+            MacroRunning = false;
             transmitGyroDone();
             resetMPUAngles();
             stopMacro();
             break;
         }
     }
-    
+
 }
-bool monitorDrive()
-{
+
+bool monitorDrive() {
     //update the gyro data
     updateLocalGyro();
     LED1 = on;
-    if(!isInRange(localAngle, 0, ROTATION_ANGLE_TOLERANCE))
-    {
+    if (!isInRange(localAngle, 0, ROTATION_ANGLE_TOLERANCE)) {
         saveMotorParms();
-        if(localAngle < 0)
-        {
+        if (localAngle < 0) {
             slowLeftSpeed();
-        }
-        else
-        {
+        } else {
             slowRightSpeed();
         }
-        
-        while(!isInRange(localAngle, 0, ROTATION_ANGLE_TOLERANCE-0.5))
-        {
+
+        while (!isInRange(localAngle, 0, ROTATION_ANGLE_TOLERANCE - 0.5)) {
             updateLocalGyro();
         }
         restoreMotors();
@@ -178,120 +184,131 @@ bool monitorDrive()
     }
     return false;
 }
-void updateLocalGyro()
-{
+
+void updateLocalGyro() {
     updateYAxis();
-    if(getX_Angle() && lastAngle != getX_Angle())
-    {
+    if (getX_Angle() && lastAngle != getX_Angle()) {
         localAngle += getX_Angle() - lastAngle;
         lastAngle = getX_Angle();
     }
 }
 
+void resetMacroStates() {
 
-bool turnDegrees()
-{
-   
-    updateYAxis();
-    //update the gyro data
-    if(lastAngle != getX_Angle())
-    {
-        
-        localAngle += getX_Angle() - lastAngle;
-        lastAngle = getX_Angle();
+    RotateMacro = InitMacro;
+}
+int deg;
+
+bool turnDegrees(int _rotation) {
+    switch (RotateMacro) {
+        case InitMacro:
+            localAngle = 0;
+            lastAngle = 0;
+
+            lastDir = 0;
+            lastSpeed = 0;
+            deg = _rotation;
+            setTimerInterval(&debugTimer, 100);
+            setTimerInterval(&updateTimer, 50);
+
+            publishDataIndex(DEVICE_MACRO);
+            lastAngle = getX_Angle();
+            INIT_PID(&RotatePID, _rotation, MOTOR_ROTATION_kp, MOTOR_ROTATION_ki, MOTOR_ROTATION_kd);
+            RotateMacro = Rotate;
+            break;
+        case Rotate:
+            updateYAxis();
+            //update the gyro data
+            if (lastAngle != getX_Angle()) {
+
+                localAngle += getX_Angle() - lastAngle;
+                lastAngle = getX_Angle();
+            }
+            //localAngle = getY_Angle() - StartAngle;
+            if (timerDone(&debugTimer)) {
+                //printf("degrees = %f  of %2f\r",localAngle,RotatePID._target);
+                LED1 ^= 1;
+                publishDataIndex(DEVICE_MACRO);
+            }
+            if (isInRange(localAngle, RotatePID._target, ROTATION_ANGLE_TOLERANCE)) {
+                MotorsAllStop();
+                resetMPUAngles();
+                LED1 = off;
+                RotateMacro = InitMacro;
+                return true;
+            }
+            if (timerDone(&updateTimer)) {
+                updateMotors(localAngle);
+            }
+            //macro is not complete
+            return false;
+            //if we are not running the motor macro we will want to stop the motors and 
+            //    if(getPerformNavigationCommand() != MOTOR_COM_DRIVE)
+            //    {
+            //        setPerformNavigationCommand(0);
+            //        MacroModeComplete();
+            //        //LED7 ^= 1;
+            //    } 
+
+            //TODO: we need to keep track of the angles that are discarded as a result of the tolerance values(we are not turning back to zero and need to tally those values)
+
+            break;
     }
-    //localAngle = getY_Angle() - StartAngle;
-    if(timerDone(&debugTimer))
-    {
-        //printf("degrees = %f  of %2f\r",localAngle,RotatePID._target);
-        //LED1 ^= 1;
-    }
-    if(isInRange(localAngle, RotatePID._target, ROTATION_ANGLE_TOLERANCE))
-    {
-        MotorsAllStop();
-        resetMPUAngles();
-        macroComplete(TURNING_MACRO);
-        LED1 = off;
-        return true;
-    }
-     if(timerDone(&updateTimer))
-    {
-        updateMotors(localAngle);
-    }
-    //macro is not complete
     return false;
-    //if we are not running the motor macro we will want to stop the motors and 
-//    if(getPerformNavigationCommand() != MOTOR_COM_DRIVE)
-//    {
-//        setPerformNavigationCommand(0);
-//        MacroModeComplete();
-//        //LED7 ^= 1;
-//    } 
-    
-    //TODO: we need to keep track of the angles that are discarded as a result of the tolerance values(we are not turning back to zero and need to tally those values)
 }
 
-   
-
-
-bool isInRange(float currentVal ,float destinationVal, float tolerence)
-{
-    if(abs(currentVal - destinationVal) < tolerence)
-    {
+bool isInRange(float currentVal, float destinationVal, float tolerence) {
+    if (abs(currentVal - destinationVal) < tolerence) {
         return true;
-    }else{
+    } else {
         return false;
     }
 }
 
-void updateMotors(float updatedAngle)
-{
+void updateMotors(float updatedAngle) {
     int speed = 0;
-    speed = updateOutput(&RotatePID, updatedAngle);   
-    
-    if(abs(speed) < MOTOR_MIN_SPEED)
-        speed = (speed > 0 ? 1: -1)*MOTOR_MIN_SPEED;
-    if(abs(speed) > MOTOR_MAX_SPEED)
-        speed = (speed > 0 ? 1: -1)*MOTOR_MAX_SPEED;
+    speed = updateOutput(&RotatePID, updatedAngle);
 
-//        lastDir = _Dir;
-//        lastSpeed = speed;if(timerDone(&debugTimer2))
+    if (abs(speed) < MOTOR_MIN_SPEED)
+        speed = (speed > 0 ? 1 : -1) * MOTOR_MIN_SPEED;
+    if (abs(speed) > MOTOR_MAX_SPEED)
+        speed = (speed > 0 ? 1 : -1) * MOTOR_MAX_SPEED;
 
-    setMotor_Vel(speed,speed);
+    //        lastDir = _Dir;
+    //        lastSpeed = speed;if(timerDone(&debugTimer2))
+
+    setMotor_Vel(speed, speed);
 
 }
 
-
-void testMoitorDrive(int dist,int speed)
-{
+void testMoitorDrive(int dist, int speed) {
     //set position mode
-    setMotorControlMode(&LeftMotor,Position,speed);
-    setMotorControlMode(&RightMotor,Position,speed);
-    
+    setMotorControlMode(&LeftMotor, Position, speed);
+    setMotorControlMode(&RightMotor, Position, speed);
+
     //Motor Position Clear
-    storeMotorPositionReached(&LeftMotor,false);
-    storeMotorPositionReached(&RightMotor,false);
-    
-    sendMotorPacket(LEFTMOTORID,SSI_ENCODER_POSITION_RESET);    
-    sendMotorPacket(RIGHTMOTORID,SSI_ENCODER_POSITION_RESET);
-    
+    storeMotorPositionReached(&LeftMotor, false);
+    storeMotorPositionReached(&RightMotor, false);
+
+    sendMotorPacket(LEFTMOTORID, SSI_ENCODER_POSITION_RESET);
+    sendMotorPacket(RIGHTMOTORID, SSI_ENCODER_POSITION_RESET);
+
     //set to drive a distance
-    setMotorCounts(&LeftMotor, dist*COUNTS_PER_CENTI);
-    setMotorCounts(&RightMotor, -dist*COUNTS_PER_CENTI);
-    
-    
-    
-     configureMacro(ROTATION_MONITORING, 0);
+    setMotorCounts(&LeftMotor, dist * COUNTS_PER_CENTI);
+    setMotorCounts(&RightMotor, -dist * COUNTS_PER_CENTI);
+
+
+
+    configureMacro(ROTATION_MONITORING, 0);
 }
 
-void testTurnDegrees(int degrees)
-{
-      configureMacro(ROTATION_COMMAND, degrees);
+void testTurnDegrees(int degrees) {
+    configureMacro(ROTATION_COMMAND, degrees);
 }
 #define MACRO_RETURN_STATUS_INDEX 1
 #define MACRO_DONE                1
-void transmitGyroDone()
-{
-    ToSend(&MasterFT,MACRO_RETURN_STATUS_INDEX,MACRO_DONE);
+
+void transmitGyroDone() {
+    ToSend(&MasterFT, MACRO_RETURN_STATUS_INDEX, MACRO_DONE);
     sendData(&MasterFT, MASTER_CONTROLLER);
 }

@@ -6,13 +6,13 @@
                    projectFiles="true">
       <logicalFolder name="f2" displayName="app" projectFiles="true">
         <logicalFolder name="f3" displayName="CAN_Handler" projectFiles="true">
-          <itemPath>../../../../Master-Controller/NaviController/firmware/src/CAN_Handler/CANFastTransfer.h</itemPath>
-          <itemPath>../../../../Master-Controller/NaviController/firmware/src/CAN_Handler/CANbufferHandler.h</itemPath>
-          <itemPath>../../../../Master-Controller/NaviController/firmware/src/CAN_Handler/GlobalCAN_IDs.h</itemPath>
-          <itemPath>../../../../Master-Controller/NaviController/firmware/src/CAN_Handler/CAN.h</itemPath>
+          <itemPath>../src/CAN_Handler/CAN.h</itemPath>
+          <itemPath>../src/CAN_Handler/CANFastTransfer.h</itemPath>
+          <itemPath>../src/CAN_Handler/CANbufferHandler.h</itemPath>
+          <itemPath>../src/CAN_Handler/GlobalCAN_IDs.h</itemPath>
         </logicalFolder>
         <logicalFolder name="f4" displayName="Macro_Handler" projectFiles="true">
-          <itemPath>../../../../Master-Controller/NaviController/firmware/src/Macro_Handler/Macro_Mgr.h</itemPath>
+          <itemPath>../src/Macro_Handler/Macro_Mgr.h</itemPath>
         </logicalFolder>
         <logicalFolder name="f2" displayName="MotorSystems" projectFiles="true">
           <itemPath>../src/MotorDefinitions.h</itemPath>
@@ -58,7 +58,7 @@
         <itemPath>../src/Macro.h</itemPath>
         <itemPath>../src/app.h</itemPath>
         <itemPath>../src/Communications.h</itemPath>
-        <itemPath>../../../../Master-Controller/NaviController/firmware/src/DataPublishing.h</itemPath>
+        <itemPath>../src/DataPublishing.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="framework" projectFiles="true">
         <logicalFolder name="f1" displayName="driver" projectFiles="true">
@@ -143,12 +143,12 @@
                    projectFiles="true">
       <logicalFolder name="f2" displayName="app" projectFiles="true">
         <logicalFolder name="f3" displayName="CAN_Handler" projectFiles="true">
-          <itemPath>../../../../Master-Controller/NaviController/firmware/src/CAN_Handler/CANFastTransfer.c</itemPath>
-          <itemPath>../../../../Master-Controller/NaviController/firmware/src/CAN_Handler/CANbufferHandler.c</itemPath>
-          <itemPath>../../../../Master-Controller/NaviController/firmware/src/CAN_Handler/CAN.c</itemPath>
+          <itemPath>../src/CAN_Handler/CAN.c</itemPath>
+          <itemPath>../src/CAN_Handler/CANFastTransfer.c</itemPath>
+          <itemPath>../src/CAN_Handler/CANbufferHandler.c</itemPath>
         </logicalFolder>
         <logicalFolder name="f4" displayName="Macro_Handler" projectFiles="true">
-          <itemPath>../../../../Master-Controller/NaviController/firmware/src/Macro_Handler/Macro_Mgr.c</itemPath>
+          <itemPath>../src/Macro_Handler/Macro_Mgr.c</itemPath>
         </logicalFolder>
         <logicalFolder name="f2" displayName="MotorSytems" projectFiles="true">
           <itemPath>../src/Motor.c</itemPath>
@@ -216,7 +216,7 @@
         <itemPath>../src/main.c</itemPath>
         <itemPath>../src/app.c</itemPath>
         <itemPath>../src/Communications.c</itemPath>
-        <itemPath>../../../../Master-Controller/NaviController/firmware/src/DataPublishing.c</itemPath>
+        <itemPath>../src/DataPublishing.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="framework" projectFiles="true">
         <logicalFolder name="f1" displayName="driver" projectFiles="true">

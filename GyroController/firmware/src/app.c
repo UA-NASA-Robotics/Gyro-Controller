@@ -95,7 +95,7 @@ void APP_Initialize(void) {
     setTimerInterval(&ms100, 100);
     setTimerInterval(&ms10, 10);
     setTimerInterval(&ledTime, 50);
-    initChangeNotification(&MotorPin1, &MotorPin2, &MasterPin1, &MasterPin2);
+    //initChangeNotification(&MotorPin1, &MotorPin2, &MasterPin1, &MasterPin2);
     isLoaded = true;
 
     DRV_TMR0_Start();
@@ -121,10 +121,11 @@ void APP_Initialize(void) {
 
     //InitUARTModule(&DebugUart,Uart_2);
 
-//    InitFastTransferModule(&MasterFT, Master_UART, MY_ADDRESS, Send_put, Buffer_Get, Buffer_Size, Buffer_Peek);
-//    InitFastTransferModule(&MotorFT, Motor_UART, MY_ADDRESS, Send_put, Buffer_Get, Buffer_Size, Buffer_Peek);
-    initChangeNotification();
- initGlobalData(DEVICE_MACRO, getRunningMacros, 500);
+    //    InitFastTransferModule(&MasterFT, Master_UART, MY_ADDRESS, Send_put, Buffer_Get, Buffer_Size, Buffer_Peek);
+    //    InitFastTransferModule(&MotorFT, Motor_UART, MY_ADDRESS, Send_put, Buffer_Get, Buffer_Size, Buffer_Peek);
+    //initChangeNotification();
+    InitDataPublishing();
+    initGlobalData(DEVICE_MACRO, getRunningMacros, 500);
     //***************INIT GYROS*************************
 
     beginMPU(&MPU_1, MPU6050_SCALE_250DPS, MPU6050_RANGE_2G, MPU6050_Address_1);

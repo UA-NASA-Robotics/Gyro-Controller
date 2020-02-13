@@ -17,12 +17,13 @@ typedef enum{
 }MacroTypes;
 
 void handleMacroStatus();
+void handleCANmacro(short _macroID, short _macroDATA);
 void configureMacro(int macroID, int macroData);
 void macroComplete(MacroTypes lastMacro);
 bool isMacroRunning();
 void runMacro();
 void stopMacro();
-bool turnDegrees();
+bool turnDegrees(int _rotation);
 bool monitorDrive();
 void updateMotors(float updatedAngle);
 void moveMotors(float _degrees,float currentAngle);
