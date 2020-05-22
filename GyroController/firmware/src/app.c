@@ -126,6 +126,8 @@ void APP_Initialize(void) {
     //initChangeNotification();
     InitDataPublishing();
     initGlobalData(DEVICE_MACRO, getRunningMacros, 500);
+    initGlobalData(DATA_0, getY_Angle, 100);
+
     //***************INIT GYROS*************************
 
     beginMPU(&MPU_1, MPU6050_SCALE_250DPS, MPU6050_RANGE_2G, MPU6050_Address_1);

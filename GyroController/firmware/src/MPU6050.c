@@ -113,7 +113,9 @@ double zAngle;
 float gyroXDPS;
 double gyroYDPS;
 double gyroZDPS;
-#define SCALING_GYRO 0.0151//67//0.01197//297 //0.0151 //.015267
+#define SCALING_GYRO_POS 0.014112//67//0.01197//297 //0.0151 //.015267
+#define SCALING_GYRO_NEG 0.0184//67//0.01197//297 //0.0151 //.015267
+
 
 void updateYAxis(void) {
     static bool firstTime = true;
@@ -132,24 +134,37 @@ void updateYAxis(void) {
             // Scalling new value based of the offset found during initialization
             gyroXDPS = (double)((MPU_1.rg.XAxis) - offsetG_X);
             // if there is noise within dead-band set the velocity vector to zero
-            if (isWithinFloat(gyroXDPS, lowG_x * 2.0, highG_x * 2.0)){
+            if (isWithinFloat(gyroXDPS, lowG_x * 1.5, highG_x * 1.5)){
                 gyroXDPS = 0.00;
             }
-            // Fixing a strange occurance where clockwise direction results in a greater magnitude
-            // velocity vector the counter-clockwise with the same speed of rotation
-            if(gyroXDPS < 0)gyroXDPS = gyroXDPS*1.226;
+//            // Fixing a strange occurance where clockwise direction results in a greater magnitude
+//            // velocity vector the counter-clockwise with the same speed of rotation
+//            if(gyroXDPS < 0)gyroXDPS = gyroXDPS*1.226;
             // Accumulating the angle with the new velocity * scaler * TimeElapsed
-            yAngle += (gyroXDPS * SCALING_GYRO * (((double)millis() - lastMillis) / 1000.0));
+            if(gyroXDPS > 0) {
+                yAngle += (gyroXDPS * SCALING_GYRO_POS * (((double)millis() - lastMillis) / 1000.0));
+            }
+            else {
+                yAngle += (gyroXDPS * SCALING_GYRO_NEG * (((double)millis() - lastMillis) / 1000.0));
+            }
+            // Adjust yAngle so it is always between 0 and 360
+            if (yAngle > 360) {
+                yAngle -= 360;
+            }
+            if (yAngle < 0) {
+                yAngle += 360;
+            }
             
             printf("%f\n",yAngle);
             lastMillis = millis();
+            
         }
     }
 
 }
 
-double getY_Angle() {
-    return yAngle;
+int getY_Angle() {
+    return (int)yAngle;
 }
 
 bool isWithinInt(int sample, int lowBound, int highBound) {
