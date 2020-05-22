@@ -132,22 +132,24 @@ void updateYAxis(void) {
             // Scalling new value based of the offset found during initialization
             gyroXDPS = (double)((MPU_1.rg.XAxis) - offsetG_X);
             // if there is noise within dead-band set the velocity vector to zero
-            if (isWithinFloat(gyroXDPS, lowG_x * 2.2, highG_x * 2.2)){
+            if (isWithinFloat(gyroXDPS, lowG_x * 2.0, highG_x * 2.0)){
                 gyroXDPS = 0.00;
             }
             // Fixing a strange occurance where clockwise direction results in a greater magnitude
             // velocity vector the counter-clockwise with the same speed of rotation
             if(gyroXDPS < 0)gyroXDPS = gyroXDPS*1.226;
             // Accumulating the angle with the new velocity * scaler * TimeElapsed
-            xAngle += (gyroXDPS * SCALING_GYRO * (((double)millis() - lastMillis) / 1000.0));
+            yAngle += (gyroXDPS * SCALING_GYRO * (((double)millis() - lastMillis) / 1000.0));
+            
+            printf("%f\n",yAngle);
             lastMillis = millis();
         }
     }
 
 }
 
-double getX_Angle() {
-    return xAngle;
+double getY_Angle() {
+    return yAngle;
 }
 
 bool isWithinInt(int sample, int lowBound, int highBound) {

@@ -11,6 +11,7 @@
 #include "CAN_Handler/GlobalCAN_IDs.h"
 #include "CAN_Handler/CAN.h"
 #include "CAN_Handler/CANFastTransfer.h"
+#include "DataPublishing.h"
 #define MOTOR_MIN_SPEED 1000
 #define MOTOR_MAX_SPEED 3000
 #define ROTATION_ANGLE_TOLERANCE 2
@@ -103,7 +104,7 @@ void configureMacro(int macroID, int macroData) {
 
 
 
-            lastAngle = getX_Angle();
+            lastAngle = getY_Angle();
             INIT_PID(&RotatePID, macroData, MOTOR_ROTATION_kp, MOTOR_ROTATION_ki, MOTOR_ROTATION_kd);
             runConfiguredMacro = turnDegrees;
             runningMacroData = macroData;
@@ -113,8 +114,8 @@ void configureMacro(int macroID, int macroData) {
         case ROTATION_MONITORING:
         {
             localAngle = 0;
-            lastAngle = getX_Angle();
-            StartAngle = getX_Angle();
+            lastAngle = getY_Angle();
+            StartAngle = getY_Angle();
             runConfiguredMacro = monitorDrive;
             MacroRunning = true;
 
@@ -187,9 +188,9 @@ bool monitorDrive() {
 
 void updateLocalGyro() {
     updateYAxis();
-    if (getX_Angle() && lastAngle != getX_Angle()) {
-        localAngle += getX_Angle() - lastAngle;
-        lastAngle = getX_Angle();
+    if (getY_Angle() && lastAngle != getY_Angle()) {
+        localAngle += getY_Angle() - lastAngle;
+        lastAngle = getY_Angle();
     }
 }
 
@@ -212,17 +213,17 @@ bool turnDegrees(int _rotation) {
             setTimerInterval(&updateTimer, 50);
 
             publishDataIndex(DEVICE_MACRO);
-            lastAngle = getX_Angle();
+            lastAngle = getY_Angle();
             INIT_PID(&RotatePID, _rotation, MOTOR_ROTATION_kp, MOTOR_ROTATION_ki, MOTOR_ROTATION_kd);
             RotateMacro = Rotate;
             break;
         case Rotate:
             updateYAxis();
             //update the gyro data
-            if (lastAngle != getX_Angle()) {
+            if (lastAngle != getY_Angle()) {
 
-                localAngle += getX_Angle() - lastAngle;
-                lastAngle = getX_Angle();
+                localAngle += getY_Angle() - lastAngle;
+                lastAngle = getY_Angle();
             }
             //localAngle = getY_Angle() - StartAngle;
             if (timerDone(&debugTimer)) {
