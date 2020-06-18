@@ -178,9 +178,10 @@ MPU_6050_t MPU_2;
 bool beginMPU(MPU_6050_t *mpu, mpu6050_dps_t scale, mpu6050_range_t range, MPU6050_ADDRESS mpua);
 bool isWithinInt(int sample, int lowBound, int highBound);
 int getY_Angle();
+int getHeading();
 void zeroIMUAxisGyro(void);
 void updateYAxis(void);
-
+void combineHeading(void);
 float updateGyro();
 void resetMPUAngles();
 void setClockSource(MPU6050_ADDRESS address,mpu6050_clockSource_t source);

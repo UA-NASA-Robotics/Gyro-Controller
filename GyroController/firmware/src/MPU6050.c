@@ -78,7 +78,7 @@ bool beginMPU(MPU_6050_t *mpu, mpu6050_dps_t scale, mpu6050_range_t range, MPU60
     //    	return false;
     //    }
 
- 
+
     // Set Clock Source
     setClockSource(mpu->Address, MPU6050_CLOCK_PLL_XGYRO);
     // Set Scale & Range
@@ -110,12 +110,14 @@ unsigned long lastMillis;
 double xAngle;
 double yAngle;
 double zAngle;
+int combinedHeading;
 float gyroXDPS;
 double gyroYDPS;
 double gyroZDPS;
 #define SCALING_GYRO_POS 0.014112//67//0.01197//297 //0.0151 //.015267
 #define SCALING_GYRO_NEG 0.0184//67//0.01197//297 //0.0151 //.015267
-
+#define ZDBL 0
+#define ZDBH 0
 
 void updateYAxis(void) {
     static bool firstTime = true;
@@ -132,20 +134,19 @@ void updateYAxis(void) {
             // Read data form IMU
             readRawGyro(&MPU_1);
             // Scalling new value based of the offset found during initialization
-            gyroXDPS = (double)((MPU_1.rg.XAxis) - offsetG_X);
+            gyroXDPS = (double) ((MPU_1.rg.XAxis) - offsetG_X);
             // if there is noise within dead-band set the velocity vector to zero
-            if (isWithinFloat(gyroXDPS, lowG_x * 1.5, highG_x * 1.5)){
+            if (isWithinFloat(gyroXDPS, lowG_x * 1.5, highG_x * 1.5)) {
                 gyroXDPS = 0.00;
             }
-//            // Fixing a strange occurance where clockwise direction results in a greater magnitude
-//            // velocity vector the counter-clockwise with the same speed of rotation
-//            if(gyroXDPS < 0)gyroXDPS = gyroXDPS*1.226;
+            //            // Fixing a strange occurance where clockwise direction results in a greater magnitude
+            //            // velocity vector the counter-clockwise with the same speed of rotation
+            //            if(gyroXDPS < 0)gyroXDPS = gyroXDPS*1.226;
             // Accumulating the angle with the new velocity * scaler * TimeElapsed
-            if(gyroXDPS > 0) {
-                yAngle += (gyroXDPS * SCALING_GYRO_POS * (((double)millis() - lastMillis) / 1000.0));
-            }
-            else {
-                yAngle += (gyroXDPS * SCALING_GYRO_NEG * (((double)millis() - lastMillis) / 1000.0));
+            if (gyroXDPS > 0) {
+                yAngle += (gyroXDPS * SCALING_GYRO_POS * (((double) millis() - lastMillis) / 1000.0));
+            } else {
+                yAngle += (gyroXDPS * SCALING_GYRO_NEG * (((double) millis() - lastMillis) / 1000.0));
             }
             // Adjust yAngle so it is always between 0 and 360
             if (yAngle > 360) {
@@ -154,17 +155,63 @@ void updateYAxis(void) {
             if (yAngle < 0) {
                 yAngle += 360;
             }
-            
-            printf("%f\n",yAngle);
+
+            //printf("%f\n",yAngle);
             lastMillis = millis();
-            
+
         }
     }
 
 }
 
 int getY_Angle() {
-    return (int)yAngle;
+    return (int) yAngle;
+}
+
+timers_t printTimer;
+double alpha;
+
+void combineHeading(void) {
+    int y_Angle = getY_Angle(); //Gyro
+    int target = getCANFastData(FT_GLOBAL, getGBL_Data(POZYX, DATA_2));
+
+    if (((y_Angle == 0) && (y_Angle < ZDBL)) || ((y_Angle > 180 - ZDBL) && (y_Angle < 180 + ZDBL)) || (y_Angle > 360 - ZDBL)) {
+        alpha = 0.5;
+    } else if (((y_Angle > ZDBL) && (y_Angle < 90 - ZDBH)) || ((y_Angle > 180 + ZDBL) && (y_Angle < 270 - ZDBH))) {
+        alpha = 0.5 / ((90 - ZDBH) - (ZDBL));
+    }
+    else if (((y_Angle > 90 - ZDBH) && (y_Angle < 90 + ZDBH)) || ((y_Angle > 270 - ZDBH) && (y_Angle < 270 + ZDBH))) {
+        alpha = 0.5;
+    }
+    else if (((y_Angle > 90 + ZDBH) && (y_Angle < 180 - ZDBL)) || ((y_Angle > 270 + ZDBH) && (y_Angle < 360 - ZDBL))) {
+        alpha = 0.5 / ((180 - ZDBL) - (90 + ZDBH));
+    }
+
+    // dealing with issue if one angle rolls over and the other does not
+    if (abs(target - y_Angle) > 180) {
+        if (target > y_Angle) {
+            target -= 360;
+        }
+        if (target < y_Angle) {
+            target += 360;
+        }
+    }
+
+    combinedHeading = (alpha * target) + ((1 - alpha) * y_Angle);
+    
+    if (printTimer.timerInterval != 10) {
+        setTimerInterval(&printTimer, 10);
+    }
+    
+    if (timerDone(&printTimer)) {
+        printf("Y: %d ", y_Angle);
+        printf("T: %d ", target);
+        printf("C: %d\n", combinedHeading);
+    }
+}
+
+int getHeading() {
+    return combinedHeading;
 }
 
 bool isWithinInt(int sample, int lowBound, int highBound) {
@@ -276,7 +323,7 @@ void setScale(MPU_6050_t *mpu, mpu6050_dps_t scale) {
 
     value = readRegister8(mpu->Address, MPU6050_REG_GYRO_CONFIG);
     value &= 0b11100111;
-    value |= (scale << 3);//| (1 << 7);
+    value |= (scale << 3); //| (1 << 7);
     writeRegister8(mpu->Address, MPU6050_REG_GYRO_CONFIG, value);
 }
 
@@ -533,7 +580,7 @@ Vector readRawAccel(MPU_6050_t *mpu) //TODO: possibly change to a burst read
     while (!(DRV_I2C0_TransferStatusGet(handle) == DRV_I2C_BUFFER_EVENT_COMPLETE || DRV_I2C0_TransferStatusGet(handle) == DRV_I2C_BUFFER_EVENT_ERROR));
 
 
-    mpu->ra.XAxis = (float)(bytesRX[0] << 8 | bytesRX[1]);
+    mpu->ra.XAxis = (float) (bytesRX[0] << 8 | bytesRX[1]);
     mpu->ra.YAxis = bytesRX[2] << 8 | bytesRX[3];
     mpu->ra.ZAxis = bytesRX[4] << 8 | bytesRX[5];
 
@@ -579,7 +626,7 @@ Vector readRawGyro(MPU_6050_t *mpu) //TODO: possibly change to a burst read
 
 
     mpu->rg.XAxis = bytesRX[0] << 8 | bytesRX[1];
-    mpu->rg.YAxis = (float)(bytesRX[2] << 8 | bytesRX[3]);
+    mpu->rg.YAxis = (float) (bytesRX[2] << 8 | bytesRX[3]);
     mpu->rg.ZAxis = bytesRX[4] << 8 | bytesRX[5];
 
     return mpu->rg;

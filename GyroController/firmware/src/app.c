@@ -126,7 +126,7 @@ void APP_Initialize(void) {
     //initChangeNotification();
     InitDataPublishing();
     initGlobalData(DEVICE_MACRO, getRunningMacros, 500);
-    initGlobalData(DATA_0, getY_Angle, 100);
+    initGlobalData(DATA_0, getHeading, 100);
 
     //***************INIT GYROS*************************
 
@@ -156,6 +156,7 @@ void APP_Tasks(void) {
         {
             // Update the gyro data
             updateYAxis();
+            combineHeading();
             handleMacroStatus();
             if (getRunningMacros() != 0) {
                 runMacros();
