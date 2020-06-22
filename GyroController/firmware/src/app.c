@@ -118,6 +118,7 @@ void APP_Initialize(void) {
     initCANFT();
     DRV_CAN0_Open();
     initMotors();
+    initGyro();
 
     //InitUARTModule(&DebugUart,Uart_2);
 
@@ -127,6 +128,8 @@ void APP_Initialize(void) {
     InitDataPublishing();
     initGlobalData(DEVICE_MACRO, getRunningMacros, 500);
     initGlobalData(DATA_0, getHeading, 100);
+    initGlobalData(DATA_1, getFinalX, 100);
+    initGlobalData(DATA_2, getFinalY, 100);
 
     //***************INIT GYROS*************************
 
@@ -157,6 +160,7 @@ void APP_Tasks(void) {
             // Update the gyro data
             updateYAxis();
             combineHeading();
+            calcFinalXY(); // calculating final XY position on gyro because it uses updated gyro heading
             handleMacroStatus();
             if (getRunningMacros() != 0) {
                 runMacros();

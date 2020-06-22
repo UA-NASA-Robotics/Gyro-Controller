@@ -111,6 +111,8 @@ double xAngle;
 double yAngle;
 double zAngle;
 int combinedHeading;
+int finalX;
+int finalY;
 float gyroXDPS;
 double gyroYDPS;
 double gyroZDPS;
@@ -118,6 +120,11 @@ double gyroZDPS;
 #define SCALING_GYRO_NEG 0.0184//67//0.01197//297 //0.0151 //.015267
 #define ZDBL 0
 #define ZDBH 0
+#define PeakComb 0.3
+
+void initGyro(void) {
+    //yAngle = getCANFastData(FT_GLOBAL, getGBL_Data(POZYX, DATA_2)); //set gyro to pozyx heading
+}
 
 void updateYAxis(void) {
     static bool firstTime = true;
@@ -145,8 +152,10 @@ void updateYAxis(void) {
             // Accumulating the angle with the new velocity * scaler * TimeElapsed
             if (gyroXDPS > 0) {
                 yAngle += (gyroXDPS * SCALING_GYRO_POS * (((double) millis() - lastMillis) / 1000.0));
+                //combinedHeading += (gyroXDPS * SCALING_GYRO_POS * (((double) millis() - lastMillis) / 1000.0));
             } else {
                 yAngle += (gyroXDPS * SCALING_GYRO_NEG * (((double) millis() - lastMillis) / 1000.0));
+                //combinedHeading +=(gyroXDPS * SCALING_GYRO_NEG * (((double) millis() - lastMillis) / 1000.0));
             }
             // Adjust yAngle so it is always between 0 and 360
             if (yAngle > 360) {
@@ -170,21 +179,27 @@ int getY_Angle() {
 
 timers_t printTimer;
 double alpha;
+float map(float x, float in_min, float in_max, float out_min, float out_max)
+{
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
 
 void combineHeading(void) {
     int y_Angle = getY_Angle(); //Gyro
     int target = getCANFastData(FT_GLOBAL, getGBL_Data(POZYX, DATA_2));
 
-    if (((y_Angle == 0) && (y_Angle < ZDBL)) || ((y_Angle > 180 - ZDBL) && (y_Angle < 180 + ZDBL)) || (y_Angle > 360 - ZDBL)) {
-        alpha = 0.5;
-    } else if (((y_Angle > ZDBL) && (y_Angle < 90 - ZDBH)) || ((y_Angle > 180 + ZDBL) && (y_Angle < 270 - ZDBH))) {
-        alpha = 0.5 / ((90 - ZDBH) - (ZDBL));
-    }
-    else if (((y_Angle > 90 - ZDBH) && (y_Angle < 90 + ZDBH)) || ((y_Angle > 270 - ZDBH) && (y_Angle < 270 + ZDBH))) {
-        alpha = 0.5;
-    }
-    else if (((y_Angle > 90 + ZDBH) && (y_Angle < 180 - ZDBL)) || ((y_Angle > 270 + ZDBH) && (y_Angle < 360 - ZDBL))) {
-        alpha = 0.5 / ((180 - ZDBL) - (90 + ZDBH));
+    if (((target >= 0) && (target <= ZDBL)) || ((target >= 180-ZDBL) && (target <= 180+ZDBL)) || (target >= 360-ZDBL)) {
+        alpha = 0;
+    } else if ((target>ZDBL) && (target < 90-ZDBH)) {
+        alpha = map(target, ZDBL, 90-ZDBH, 0, PeakComb);
+    } else if (((target > 90-ZDBH) && (target < 90+ZDBH)) || ((target > 270-ZDBH) && (target < 270+ZDBH))) {
+        alpha = PeakComb;
+    } else if ((target > 90 + ZDBH) && (target < 180 - ZDBL)) {
+        alpha = map(target, 90+ZDBH, 180-ZDBL, PeakComb, 0);
+    } else if ((target > 180+ZDBL) && (target < 270-ZDBH)) {
+        alpha = map(target, 180+ZDBL, 270-ZDBH, 0, PeakComb);
+    } else if ((target > 270 + ZDBH) && (target < 360 - ZDBL)) {
+        alpha = map(target, 270+ZDBH, 360-ZDBL, PeakComb, 0);
     }
 
     // dealing with issue if one angle rolls over and the other does not
@@ -197,21 +212,52 @@ void combineHeading(void) {
         }
     }
 
-    combinedHeading = (alpha * target) + ((1 - alpha) * y_Angle);
-    
-    if (printTimer.timerInterval != 10) {
-        setTimerInterval(&printTimer, 10);
+    yAngle = (alpha * target) + ((1 - alpha) * y_Angle);
+   combinedHeading = (yAngle );
+//    lastyAngle = yAngle;
+    if (printTimer.timerInterval != 200) {
+        setTimerInterval(&printTimer, 200);
     }
     
-    if (timerDone(&printTimer)) {
-        printf("Y: %d ", y_Angle);
-        printf("T: %d ", target);
-        printf("C: %d\n", combinedHeading);
-    }
+//    if (timerDone(&printTimer)) {
+//        printf("A: %f ", alpha);
+//        printf("Y: %d ", y_Angle);
+//        printf("T: %d ", target);
+//        printf("C: %d\n", combinedHeading);
+//    }
 }
 
 int getHeading() {
     return combinedHeading;
+}
+
+void calcFinalXY(void) {
+    int x = getCANFastData(FT_GLOBAL, getGBL_Data(POZYX, DATA_0));
+    int y = getCANFastData(FT_GLOBAL, getGBL_Data(POZYX, DATA_1));
+    int currentHeading = getHeading();
+    
+    finalX = x - MID_DIST * cos((float)currentHeading * DegToRad);
+    finalY = y - MID_DIST * sin((float)currentHeading * DegToRad);
+    
+    if (printTimer.timerInterval != 100) {
+        setTimerInterval(&printTimer, 100);
+    }
+    
+//    if (timerDone(&printTimer)) {
+//        printf("X: %d ", x);
+//        printf("Y: %d ", y);
+//        printf("finalX: %d ", finalX);
+//        printf("finalY: %d ", finalY);
+//        printf("H: %d\n", currentHeading);
+//    }
+}
+
+int getFinalX() {
+    return finalX;
+}
+
+int getFinalY() {
+    return finalY;
 }
 
 bool isWithinInt(int sample, int lowBound, int highBound) {

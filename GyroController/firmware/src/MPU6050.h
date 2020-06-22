@@ -72,6 +72,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define MPU6050_REG_PWR_MGMT_1        (0x6B) // Power Management 1
 #define MPU6050_REG_WHO_AM_I          (0x75) // Who Am I
 
+#define MID_DIST 400.0                 //set distance to center of robot
+#define DegToRad (M_PI/180.0)          //57.2957795131
 
 typedef struct 
 {
@@ -180,8 +182,12 @@ bool isWithinInt(int sample, int lowBound, int highBound);
 int getY_Angle();
 int getHeading();
 void zeroIMUAxisGyro(void);
+void initGyro(void);
 void updateYAxis(void);
 void combineHeading(void);
+int getFinalX(void);
+int getFinalY(void);
+void calcFinalXY(void);
 float updateGyro();
 void resetMPUAngles();
 void setClockSource(MPU6050_ADDRESS address,mpu6050_clockSource_t source);
