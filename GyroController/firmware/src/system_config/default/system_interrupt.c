@@ -129,49 +129,6 @@ void __ISR(_UART6_FAULT_VECTOR, ipl5AUTO) _IntHandlerDrvUsartErrorInstance1(void
     DRV_USART_TasksError(sysObj.drvUsart1);
 }
  
- 
-
- 
-
- 
-
- 
-
- 
-void __ISR(_CHANGE_NOTICE_B_VECTOR, ipl1AUTO) _IntHandlerChangeNotification_PortB(void)
-{
-    if(getLoadedState())
-    {
-       pinChangeNotified();
-    }
-    PORTB;
-    PLIB_INT_SourceFlagClear(INT_ID_0,INT_SOURCE_CHANGE_NOTICE_B);
-}
-void __ISR(_CHANGE_NOTICE_C_VECTOR, ipl1AUTO) _IntHandlerChangeNotification_PortC(void)
-{
-    if(getLoadedState())
-    {
-       pinChangeNotified();
-    }
-    PORTC;
-    PLIB_INT_SourceFlagClear(INT_ID_0,INT_SOURCE_CHANGE_NOTICE_C);
-}
-void __ISR(_CHANGE_NOTICE_D_VECTOR, ipl1AUTO) _IntHandlerChangeNotification_PortD(void)
-{
-    if(getLoadedState())
-    {
-       pinChangeNotified();
-    }
-    PORTD;
-    PLIB_INT_SourceFlagClear(INT_ID_0,INT_SOURCE_CHANGE_NOTICE_D);
-}
-   void __ISR(_CHANGE_NOTICE_E_VECTOR, ipl1AUTO) _IntHandlerChangeNotification_PortE(void)
-{
-       PORTE;
-    PLIB_INT_SourceFlagClear(INT_ID_0,INT_SOURCE_CHANGE_NOTICE_E);
-}
- 
-
 
 void __ISR(_TIMER_1_VECTOR, ipl6AUTO) IntHandlerDrvTmrInstance0(void)
 {

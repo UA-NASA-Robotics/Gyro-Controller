@@ -192,7 +192,7 @@ void combineHeading(void) {
         alpha = 0;
     } else if ((target>ZDBL) && (target < 90-ZDBH)) {
         alpha = map(target, ZDBL, 90-ZDBH, 0, PeakComb);
-    } else if (((target > 90-ZDBH) && (target < 90+ZDBH)) || ((target > 270-ZDBH) && (target < 270+ZDBH))) {
+    } else if (((target >= 90-ZDBH) && (target <= 90+ZDBH)) || ((target >= 270-ZDBH) && (target <= 270+ZDBH))) {
         alpha = PeakComb;
     } else if ((target > 90 + ZDBH) && (target < 180 - ZDBL)) {
         alpha = map(target, 90+ZDBH, 180-ZDBL, PeakComb, 0);
@@ -201,7 +201,7 @@ void combineHeading(void) {
     } else if ((target > 270 + ZDBH) && (target < 360 - ZDBL)) {
         alpha = map(target, 270+ZDBH, 360-ZDBL, PeakComb, 0);
     }
-
+    combinedHeading  = target;
     // dealing with issue if one angle rolls over and the other does not
     if (abs(target - y_Angle) > 180) {
         if (target > y_Angle) {
@@ -213,7 +213,7 @@ void combineHeading(void) {
     }
 
     yAngle = (alpha * target) + ((1 - alpha) * y_Angle);
-   combinedHeading = (yAngle );
+    //combinedHeading = (yAngle);
 //    lastyAngle = yAngle;
     if (printTimer.timerInterval != 200) {
         setTimerInterval(&printTimer, 200);
@@ -236,8 +236,8 @@ void calcFinalXY(void) {
     int y = getCANFastData(FT_GLOBAL, getGBL_Data(POZYX, DATA_1));
     int currentHeading = getHeading();
     
-    finalX = x - MID_DIST * cos((float)currentHeading * DegToRad);
-    finalY = y - MID_DIST * sin((float)currentHeading * DegToRad);
+    finalX = x ;//- (int)(MID_DIST * cos((float)currentHeading * DegToRad));
+    finalY = y ;//- (int)(MID_DIST * sin((float)currentHeading * DegToRad));
     
     if (printTimer.timerInterval != 100) {
         setTimerInterval(&printTimer, 100);
