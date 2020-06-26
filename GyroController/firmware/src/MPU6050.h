@@ -188,6 +188,7 @@ void combineHeading(void);
 int getFinalX(void);
 int getFinalY(void);
 void calcFinalXY(void);
+void accHeading(void);
 float updateGyro();
 void resetMPUAngles();
 void setClockSource(MPU6050_ADDRESS address,mpu6050_clockSource_t source);

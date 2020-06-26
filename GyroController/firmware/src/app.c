@@ -99,7 +99,7 @@ void APP_Initialize(void) {
     isLoaded = true;
 
     DRV_TMR0_Start();
-
+    
     while (!timerDone(&bootTimer)) {
         LED1 ^= 1;
         while (!timerDone(&ledTime));
@@ -131,12 +131,7 @@ void APP_Initialize(void) {
     initGlobalData(DATA_1, getFinalX, 100);
     initGlobalData(DATA_2, getFinalY, 100);
 
-    //***************INIT GYROS*************************
-
-    beginMPU(&MPU_1, MPU6050_SCALE_250DPS, MPU6050_RANGE_2G, MPU6050_Address_1);
-    zeroIMUAxisGyro();
-
-    //*************************************************   
+ 
 }
 
 void APP_Tasks(void) {
@@ -159,8 +154,11 @@ void APP_Tasks(void) {
         {
             // Update the gyro data
             updateYAxis();
-            combineHeading();
-            calcFinalXY(); // calculating final XY position on gyro because it uses updated gyro heading
+            //combineHeading();
+            accHeading();
+            calcFinalXY(); 
+            
+            
             handleMacroStatus();
             if (getRunningMacros() != 0) {
                 runMacros();

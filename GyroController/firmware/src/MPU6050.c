@@ -124,6 +124,12 @@ double gyroZDPS;
 
 void initGyro(void) {
     //yAngle = getCANFastData(FT_GLOBAL, getGBL_Data(POZYX, DATA_2)); //set gyro to pozyx heading
+    //***************INIT GYROS*************************
+
+    beginMPU(&MPU_1, MPU6050_SCALE_250DPS, MPU6050_RANGE_2G, MPU6050_Address_1);
+    zeroIMUAxisGyro();
+
+    //*************************************************   
 }
 
 void updateYAxis(void) {
@@ -140,7 +146,7 @@ void updateYAxis(void) {
         if (lastMillis != millis()) {
             // Read data form IMU
             readRawGyro(&MPU_1);
-            // Scalling new value based of the offset found during initialization
+            // Scaling new value based of the offset found during initialization
             gyroXDPS = (double) ((MPU_1.rg.XAxis) - offsetG_X);
             // if there is noise within dead-band set the velocity vector to zero
             if (isWithinFloat(gyroXDPS, lowG_x * 1.5, highG_x * 1.5)) {
@@ -158,7 +164,7 @@ void updateYAxis(void) {
                 //combinedHeading +=(gyroXDPS * SCALING_GYRO_NEG * (((double) millis() - lastMillis) / 1000.0));
             }
             // Adjust yAngle so it is always between 0 and 360
-            if (yAngle > 360) {
+            if (yAngle >= 360) {
                 yAngle -= 360;
             }
             if (yAngle < 0) {
@@ -179,29 +185,29 @@ int getY_Angle() {
 
 timers_t printTimer;
 double alpha;
-float map(float x, float in_min, float in_max, float out_min, float out_max)
-{
-  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+
+float map(float x, float in_min, float in_max, float out_min, float out_max) {
+    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
 void combineHeading(void) {
     int y_Angle = getY_Angle(); //Gyro
     int target = getCANFastData(FT_GLOBAL, getGBL_Data(POZYX, DATA_2));
 
-    if (((target >= 0) && (target <= ZDBL)) || ((target >= 180-ZDBL) && (target <= 180+ZDBL)) || (target >= 360-ZDBL)) {
+    if (((target >= 0) && (target <= ZDBL)) || ((target >= 180 - ZDBL) && (target <= 180 + ZDBL)) || (target >= 360 - ZDBL)) {
         alpha = 0;
-    } else if ((target>ZDBL) && (target < 90-ZDBH)) {
-        alpha = map(target, ZDBL, 90-ZDBH, 0, PeakComb);
-    } else if (((target >= 90-ZDBH) && (target <= 90+ZDBH)) || ((target >= 270-ZDBH) && (target <= 270+ZDBH))) {
+    } else if ((target > ZDBL) && (target < 90 - ZDBH)) {
+        alpha = map(target, ZDBL, 90 - ZDBH, 0, PeakComb);
+    } else if (((target >= 90 - ZDBH) && (target <= 90 + ZDBH)) || ((target >= 270 - ZDBH) && (target <= 270 + ZDBH))) {
         alpha = PeakComb;
     } else if ((target > 90 + ZDBH) && (target < 180 - ZDBL)) {
-        alpha = map(target, 90+ZDBH, 180-ZDBL, PeakComb, 0);
-    } else if ((target > 180+ZDBL) && (target < 270-ZDBH)) {
-        alpha = map(target, 180+ZDBL, 270-ZDBH, 0, PeakComb);
+        alpha = map(target, 90 + ZDBH, 180 - ZDBL, PeakComb, 0);
+    } else if ((target > 180 + ZDBL) && (target < 270 - ZDBH)) {
+        alpha = map(target, 180 + ZDBL, 270 - ZDBH, 0, PeakComb);
     } else if ((target > 270 + ZDBH) && (target < 360 - ZDBL)) {
-        alpha = map(target, 270+ZDBH, 360-ZDBL, PeakComb, 0);
+        alpha = map(target, 270 + ZDBH, 360 - ZDBL, PeakComb, 0);
     }
-    combinedHeading  = target;
+    combinedHeading = target;
     // dealing with issue if one angle rolls over and the other does not
     if (abs(target - y_Angle) > 180) {
         if (target > y_Angle) {
@@ -214,42 +220,44 @@ void combineHeading(void) {
 
     yAngle = (alpha * target) + ((1 - alpha) * y_Angle);
     //combinedHeading = (yAngle);
-//    lastyAngle = yAngle;
+    //    lastyAngle = yAngle;
     if (printTimer.timerInterval != 200) {
         setTimerInterval(&printTimer, 200);
     }
-    
-//    if (timerDone(&printTimer)) {
-//        printf("A: %f ", alpha);
-//        printf("Y: %d ", y_Angle);
-//        printf("T: %d ", target);
-//        printf("C: %d\n", combinedHeading);
-//    }
+
+    //    if (timerDone(&printTimer)) {
+    //        printf("A: %f ", alpha);
+    //        printf("Y: %d ", y_Angle);
+    //        printf("T: %d ", target);
+    //        printf("C: %d\n", combinedHeading);
+    //    }
 }
 
 int getHeading() {
     return combinedHeading;
 }
 
+// calculating final XY position on gyro because it uses updated gyro heading
+
 void calcFinalXY(void) {
     int x = getCANFastData(FT_GLOBAL, getGBL_Data(POZYX, DATA_0));
     int y = getCANFastData(FT_GLOBAL, getGBL_Data(POZYX, DATA_1));
     int currentHeading = getHeading();
-    
-    finalX = x ;//- (int)(MID_DIST * cos((float)currentHeading * DegToRad));
-    finalY = y ;//- (int)(MID_DIST * sin((float)currentHeading * DegToRad));
-    
+
+    finalX = x; //- (int)(MID_DIST * cos((float)currentHeading * DegToRad));
+    finalY = y; //- (int)(MID_DIST * sin((float)currentHeading * DegToRad));
+
     if (printTimer.timerInterval != 100) {
         setTimerInterval(&printTimer, 100);
     }
-    
-//    if (timerDone(&printTimer)) {
-//        printf("X: %d ", x);
-//        printf("Y: %d ", y);
-//        printf("finalX: %d ", finalX);
-//        printf("finalY: %d ", finalY);
-//        printf("H: %d\n", currentHeading);
-//    }
+
+    //    if (timerDone(&printTimer)) {
+    //        printf("X: %d ", x);
+    //        printf("Y: %d ", y);
+    //        printf("finalX: %d ", finalX);
+    //        printf("finalY: %d ", finalY);
+    //        printf("H: %d\n", currentHeading);
+    //    }
 }
 
 int getFinalX() {
@@ -258,6 +266,58 @@ int getFinalX() {
 
 int getFinalY() {
     return finalY;
+}
+
+int pozyxHeading;
+int lastP = -2;
+int lastG = 0;
+int test;
+
+void accHeading() {
+    int pMeasHeading = 0;
+    int gMeasHeading = getY_Angle();
+
+    if (getNewDataFlagStatus(FT_GLOBAL, getGBL_Data(POZYX, DATA_2))) { //if there is new pozyx heading data
+        pMeasHeading = getCANFastData(FT_GLOBAL, getGBL_Data(POZYX, DATA_2));
+        if(lastP == -2)
+        {
+            lastP = pMeasHeading;
+            pozyxHeading = pMeasHeading;
+            
+        }
+
+        if ((pMeasHeading - lastP) == 0 && (gMeasHeading - lastG != 0)) { //avoid division by zero
+            pozyxHeading = pozyxHeading + (gMeasHeading - lastG);
+        } else if (abs(pMeasHeading - lastP) > 0) {
+            test = (gMeasHeading - lastG)*(gMeasHeading - lastG) / (pMeasHeading - lastP);
+            pozyxHeading = pozyxHeading + (int)((gMeasHeading - lastG));//*abs((gMeasHeading - lastG) / (pMeasHeading - lastP)));
+            lastP = pMeasHeading;
+            lastG = gMeasHeading;
+            if (pozyxHeading >= 360) {
+                pozyxHeading -= 360;
+            }
+            if (pozyxHeading < 0) {
+                pozyxHeading += 360;
+            }
+
+        }
+        //START HERE
+        //if angle difference is greater than 180, subtract 360 and then find difference
+//        a = targetA - sourceA;
+//        a -= 360 if a > 180
+//                a += 360 if a < -180
+
+
+        printf("Pn: %d ", pozyxHeading);
+        printf("Pm: %d ", pMeasHeading);
+        printf("Plast: %d ", lastP);
+        
+        printf("Gm: %d ", gMeasHeading);
+        printf("Glast: %d\n ", lastG);
+
+    }
+
+
 }
 
 bool isWithinInt(int sample, int lowBound, int highBound) {
