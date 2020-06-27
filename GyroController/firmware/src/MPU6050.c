@@ -273,17 +273,16 @@ int lastP = -2;
 int lastG = 0;
 int test;
 
-void accHeading() {
+void accumHeading() {
     int pMeasHeading = 0;
     int gMeasHeading = getY_Angle();
 
     if (getNewDataFlagStatus(FT_GLOBAL, getGBL_Data(POZYX, DATA_2))) { //if there is new pozyx heading data
         pMeasHeading = getCANFastData(FT_GLOBAL, getGBL_Data(POZYX, DATA_2));
-        if(lastP == -2)
+        if(lastP == -2) //initialization
         {
             lastP = pMeasHeading;
             pozyxHeading = pMeasHeading;
-            
         }
 
         if ((pMeasHeading - lastP) == 0 && (gMeasHeading - lastG != 0)) { //avoid division by zero
@@ -305,7 +304,7 @@ void accHeading() {
         //if angle difference is greater than 180, subtract 360 and then find difference
 //        a = targetA - sourceA;
 //        a -= 360 if a > 180
-//                a += 360 if a < -180
+//        a += 360 if a < -180
 
 
         printf("Pn: %d ", pozyxHeading);
@@ -318,6 +317,51 @@ void accHeading() {
     }
 
 
+}
+
+double accumHeading2Var = 0.0;
+int gyroInputLast = -2;
+int headingLast = -2;
+
+void accumHeading2() {
+    int gyroInput = 0;
+    double alpha = 0.5;
+    int pozyxInput = 0;
+    int a = 0;
+    int b = 0;
+    
+    //if there is new pozyx heading data grab it and calculate
+    if (getNewDataFlagStatus(FT_GLOBAL, getGBL_Data(POZYX, DATA_2))) { 
+        pozyxInput = getCANFastData(FT_GLOBAL, getGBL_Data(POZYX, DATA_2));
+        gyroInput = getY_Angle();
+        
+        if (gyroInputLast == -2) { //initialization condition
+            gyroInputLast = gyroInput;
+            headingLast = pozyxInput;
+        }
+        
+        //check if rollover occurred
+        a = gyroInput - gyroInputLast;
+        if (a > 180) {
+            gyroInputLast += 360;
+        } else if (a < -180) {
+            gyroInputLast -= 360;
+        }
+        b = pozyxInput - headingLast;
+        if (b > 180) {
+            headingLast += 360;
+        } else if (b < -180) {
+            headingLast -= 360;
+        }
+        
+        if (gyroInputLast == gyroInput) { //if robot is not moving
+            alpha = 0;
+        }
+        accumHeading2Var = (double)headingLast + (double)(gyroInput-gyroInputLast)*(1-alpha) + alpha*(double)(pozyxInput - headingLast);
+        gyroInputLast = gyroInput;
+        headingLast = accumHeading2Var;
+    }
+    
 }
 
 bool isWithinInt(int sample, int lowBound, int highBound) {

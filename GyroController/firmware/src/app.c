@@ -155,7 +155,7 @@ void APP_Tasks(void) {
             // Update the gyro data
             updateYAxis();
             //combineHeading();
-            accHeading();
+            accumHeading2();
             calcFinalXY(); 
             
             
