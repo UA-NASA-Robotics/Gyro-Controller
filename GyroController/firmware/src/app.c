@@ -127,7 +127,7 @@ void APP_Initialize(void) {
     //initChangeNotification();
     InitDataPublishing();
     initGlobalData(DEVICE_MACRO, getRunningMacros, 500);
-    initGlobalData(DATA_0, getHeading, 100);
+    initGlobalData(DATA_0, getAccumHeading2, 100);
     initGlobalData(DATA_1, getFinalX, 100);
     initGlobalData(DATA_2, getFinalY, 100);
 

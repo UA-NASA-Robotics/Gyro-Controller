@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <math.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include "MPU6050.h"
 #include "Timers.h"
 #include <stdio.h>
@@ -322,13 +323,13 @@ void accumHeading() {
 double accumHeading2Var = 0.0;
 int gyroInputLast = -2;
 int headingLast = -2;
+double alpha = 0.5;
 
 void accumHeading2() {
     int gyroInput = 0;
-    double alpha = 0.5;
     int pozyxInput = 0;
-    int a = 0;
-    int b = 0;
+    int g = 0;
+    int p = 0;
     
     //if there is new pozyx heading data grab it and calculate
     if (getNewDataFlagStatus(FT_GLOBAL, getGBL_Data(POZYX, DATA_2))) { 
@@ -341,27 +342,81 @@ void accumHeading2() {
         }
         
         //check if rollover occurred
-        a = gyroInput - gyroInputLast;
-        if (a > 180) {
-            gyroInputLast += 360;
-        } else if (a < -180) {
-            gyroInputLast -= 360;
-        }
-        b = pozyxInput - headingLast;
-        if (b > 180) {
-            headingLast += 360;
-        } else if (b < -180) {
-            headingLast -= 360;
-        }
+//        a = gyroInput - gyroInputLast;
+//        if (a > 180) {
+//            gyroInputLast += 360;
+//        } else if (a < -180) {
+//            gyroInputLast -= 360;
+//        }
+//        b = pozyxInput - headingLast;
+//        if (b > 180) {
+//            headingLast += 360;
+//        } else if (b < -180) {
+//            headingLast -= 360;
+//        }
+        
+        //correcting for rollover
+//        if ((headingLast >=0 && headingLast <=90) && (pozyxInput >= 270 && pozyxInput <= 360)) {
+//            headingLast += 360;
+//        } else if ((headingLast >=270 && headingLast <=360) && (pozyxInput >= 0 && pozyxInput <= 90)) {
+//            headingLast -= 360;
+//        }
+
+        //get the angle differences between last and current for gyro and pozyx
+        g = angleDiff(gyroInput, gyroInputLast);
+//        if( abs(gyroInput - gyroInputLast) > 180)
+//            g*=-1;
+        p = angleDiff(pozyxInput, headingLast);
+//        if( abs(pozyxInput - headingLast) > 180)
+//            p*=-1;
         
         if (gyroInputLast == gyroInput) { //if robot is not moving
-            alpha = 0;
+            //alpha = 0.0;
+        } else {
+            alpha = 0.5;
         }
-        accumHeading2Var = (double)headingLast + (double)(gyroInput-gyroInputLast)*(1-alpha) + alpha*(double)(pozyxInput - headingLast);
+        
+        accumHeading2Var = (double)headingLast + (double)(g)*(1-alpha) + alpha*(double)(p);
+        if (accumHeading2Var > 360.0) { // handle rollover
+            accumHeading2Var -= 360.0;
+        } else if (accumHeading2Var < 0.0) {
+            accumHeading2Var += 360.0;
+        }
         gyroInputLast = gyroInput;
         headingLast = accumHeading2Var;
+        
+        printf("accum: %f ", accumHeading2Var);
+        printf("gIn: %d ", gyroInput);
+        printf("pIn: %d ", pozyxInput);
+        printf("g: %d ", g);
+        printf("p: %d\n ", p);
     }
     
+}
+
+int diff;
+// returns the closest distance between two angles
+int angleDiff (int a, int b) {
+//    int diff = abs(a - b);;
+//    diff = ((diff + 180) % 360) - 180;
+//    int sign = (a - b >= 0 && a - b <= 180) || (a - b <=-180 && a- b>= -360) ? -1 : 1; 
+//    diff *= sign;
+    if(abs(a - b) > 180){
+        diff = ((abs(a-b)+180)%360)-180;
+        if(a-b<0)
+        {
+            diff*=(-1);
+        }
+    }else{
+        diff = ((a-b+180)%360)-180;
+    }
+    
+
+    return diff;
+} 
+
+int getAccumHeading2() {
+    return (double)accumHeading2Var;
 }
 
 bool isWithinInt(int sample, int lowBound, int highBound) {
