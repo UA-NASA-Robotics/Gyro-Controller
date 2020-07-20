@@ -243,22 +243,22 @@ int getHeading() {
 void calcFinalXY(void) {
     int x = getCANFastData(FT_GLOBAL, getGBL_Data(POZYX, DATA_0));
     int y = getCANFastData(FT_GLOBAL, getGBL_Data(POZYX, DATA_1));
-    int currentHeading = getHeading();
+    int currentHeading = getAccumHeading2();
 
-    finalX = x; //- (int)(MID_DIST * cos((float)currentHeading * DegToRad));
-    finalY = y; //- (int)(MID_DIST * sin((float)currentHeading * DegToRad));
+    finalX = x - (int)(MID_DIST * cos((float)currentHeading * DegToRad));
+    finalY = y - (int)(MID_DIST * sin((float)currentHeading * DegToRad));
 
     if (printTimer.timerInterval != 100) {
         setTimerInterval(&printTimer, 100);
     }
 
-    //    if (timerDone(&printTimer)) {
-    //        printf("X: %d ", x);
-    //        printf("Y: %d ", y);
-    //        printf("finalX: %d ", finalX);
-    //        printf("finalY: %d ", finalY);
-    //        printf("H: %d\n", currentHeading);
-    //    }
+        if (timerDone(&printTimer)) {
+            printf("X: %d ", x);
+            printf("Y: %d ", y);
+            printf("finalX: %d ", finalX);
+            printf("finalY: %d ", finalY);
+            printf("H: %d\n", currentHeading);
+        }
 }
 
 int getFinalX() {
@@ -330,6 +330,7 @@ void accumHeading2() {
     int pozyxInput = 0;
     int g = 0;
     int p = 0;
+    int y = 0;
     
     //if there is new pozyx heading data grab it and calculate
     if (getNewDataFlagStatus(FT_GLOBAL, getGBL_Data(POZYX, DATA_2))) { 
@@ -341,40 +342,18 @@ void accumHeading2() {
             headingLast = pozyxInput;
         }
         
-        //check if rollover occurred
-//        a = gyroInput - gyroInputLast;
-//        if (a > 180) {
-//            gyroInputLast += 360;
-//        } else if (a < -180) {
-//            gyroInputLast -= 360;
-//        }
-//        b = pozyxInput - headingLast;
-//        if (b > 180) {
-//            headingLast += 360;
-//        } else if (b < -180) {
-//            headingLast -= 360;
-//        }
-        
-        //correcting for rollover
-//        if ((headingLast >=0 && headingLast <=90) && (pozyxInput >= 270 && pozyxInput <= 360)) {
-//            headingLast += 360;
-//        } else if ((headingLast >=270 && headingLast <=360) && (pozyxInput >= 0 && pozyxInput <= 90)) {
-//            headingLast -= 360;
-//        }
-
         //get the angle differences between last and current for gyro and pozyx
         g = angleDiff(gyroInput, gyroInputLast);
-//        if( abs(gyroInput - gyroInputLast) > 180)
-//            g*=-1;
         p = angleDiff(pozyxInput, headingLast);
-//        if( abs(pozyxInput - headingLast) > 180)
-//            p*=-1;
         
         if (gyroInputLast == gyroInput) { //if robot is not moving
             //alpha = 0.0;
         } else {
             alpha = 0.5;
         }
+        
+        y = getFinalY();
+        alpha = 0.4 + y * (0.4)/(-4500);
         
         accumHeading2Var = (double)headingLast + (double)(g)*(1-alpha) + alpha*(double)(p);
         if (accumHeading2Var > 360.0) { // handle rollover
@@ -385,11 +364,11 @@ void accumHeading2() {
         gyroInputLast = gyroInput;
         headingLast = accumHeading2Var;
         
-        printf("accum: %f ", accumHeading2Var);
-        printf("gIn: %d ", gyroInput);
-        printf("pIn: %d ", pozyxInput);
-        printf("g: %d ", g);
-        printf("p: %d\n ", p);
+//        printf("accum: %f ", accumHeading2Var);
+//        printf("gIn: %d ", gyroInput);
+//        printf("pIn: %d ", pozyxInput);
+//        printf("g: %d ", g);
+//        printf("p: %d\n ", p);
     }
     
 }
@@ -397,10 +376,6 @@ void accumHeading2() {
 int diff;
 // returns the closest distance between two angles
 int angleDiff (int a, int b) {
-//    int diff = abs(a - b);;
-//    diff = ((diff + 180) % 360) - 180;
-//    int sign = (a - b >= 0 && a - b <= 180) || (a - b <=-180 && a- b>= -360) ? -1 : 1; 
-//    diff *= sign;
     if(abs(a - b) > 180){
         diff = ((abs(a-b)+180)%360)-180;
         if(a-b<0)

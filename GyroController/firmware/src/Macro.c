@@ -154,7 +154,6 @@ void macroComplete(MacroTypes lastMacro) {
         }
         case TURNING_MACRO:
         {
-            //togglePinState(&MasterPin1);
             MacroRunning = false;
             transmitGyroDone();
             resetMPUAngles();
